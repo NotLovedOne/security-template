@@ -1,45 +1,56 @@
 package org.example.practice.utils
 
 import io.jsonwebtoken.Jwts
-import org.example.practice.config.JwtConfig
+import io.jsonwebtoken.SignatureAlgorithm
 import io.jsonwebtoken.security.Keys
-import io.jsonwebtoken.security.SignatureAlgorithm
-
+import org.example.practice.config.JwtConfig
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
-import java.util.Date
+import java.nio.charset.StandardCharsets
+import java.util.*
+import javax.crypto.SecretKey
 
 @Component
-class JwtUtil(private val jwtConfig: JwtConfig? = null) {
-    private val secret = Keys.hmacShaKeyFor(jwtConfig?.secret?.toByteArray())
+class JwtUtil(
+    jwtConfig: JwtConfig
+) {
+    private val secretKey: SecretKey =
+        Keys.hmacShaKeyFor(jwtConfig.secret.toByteArray(StandardCharsets.UTF_8))
+    private val expirationMs: Long = jwtConfig.expiration * 1000
 
-    open fun generateToken(userDetails: CustomUserDetails): String {
+    fun generateToken(userDetails: UserDetails): String {
         val now = Date()
-        val exp = Date(now.time + jwtConfig?.expiration!! * 1000)
-        return Jwts.builder().subject(userDetails.username).issuedAt(now).expiration(exp).signWith(secret).compact()
-
+        val exp = Date(now.time + expirationMs)
+        return Jwts.builder()
+            .subject(userDetails.username)
+            .issuedAt(now)
+            .expiration(exp)
+            .signWith(secretKey)
+            .compact()
     }
 
-    fun extractUsername(token: String): String? {
-        return try {
-            val claims = Jwts.parser().verifyWith(secret).build().parseSignedClaims(token).payload.subject
-            claims
-        }
-        catch (e: Exception){
-            null
-        }
+    fun extractUsername(token: String): String? = try {
+        val claims = Jwts.parser()
+            .verifyWith(secretKey)
+            .build()
+            .parseSignedClaims(token)
+            .payload
+        claims.subject
+    } catch (_: Exception) {
+        null
     }
 
-    fun isExpired(token: String): Boolean{
-        return try {
-            val exp = Jwts.parser().verifyWith(secret).build().parseSignedClaims(token).payload.expiration
-            exp.before(Date())
-        }
-        catch(e: Exception){
-            true
-        }
+    private fun isExpired(token: String): Boolean = try {
+        val exp = Jwts.parser().verifyWith(secretKey).build()
+            .parseSignedClaims(token).payload.expiration
+        exp.before(Date())
+    } catch (_: Exception) {
+        true
     }
 
-    fun validate(token: String, userDetails: UserDetails): Boolean = extractUsername(token)?.isNotBlank()!! && !isExpired(token)
-
+    fun validate(token: String, userDetails: UserDetails): Boolean {
+        val u = extractUsername(token) ?: return false
+        if (u != userDetails.username) return false
+        return !isExpired(token)
+    }
 }

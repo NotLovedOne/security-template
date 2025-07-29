@@ -6,7 +6,8 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 class JwtConfig {
     @Value("\${jwt.secret}")
-    var secret: String? = null
+    lateinit var secret: String
+
     @Value("\${jwt.duration}")
-    var expiration: Int? = null
+    var expiration: Long = 3600
 }
