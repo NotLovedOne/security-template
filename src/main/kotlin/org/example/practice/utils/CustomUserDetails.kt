@@ -35,4 +35,8 @@ class CustomUserDetails (private val user : User) : UserDetails {
         return true
     }
 
+    fun dtoToUser(): CustomUserDetails {
+        return CustomUserDetails(user)
+    }
+
 }

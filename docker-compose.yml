@@ -1,17 +1,24 @@
 services:
   postgres:
     image: postgres:13.15
-    container_name: love-postgres
+    container_name: auth-postgres
     environment:
-      POSTGRES_DB: love
+      POSTGRES_DB: auth
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
+      TZ: Asia/Almaty
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
