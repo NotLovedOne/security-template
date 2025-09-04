@@ -4,12 +4,14 @@ import jakarta.validation.ConstraintViolationException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException
 import java.time.LocalDateTime
 
 @RestControllerAdvice
@@ -77,6 +79,77 @@ class GlobalExceptionHandler {
         return ResponseEntity(apiError, HttpStatus.UNAUTHORIZED)
     }
 
+    @ExceptionHandler(UserAlreadyExistsException::class)
+    fun handleUserAlreadyExistsException(ex: UserAlreadyExistsException, request: WebRequest): ResponseEntity<ApiError> {
+        log.error("User already exists: {}", ex.message)
+
+        val apiError = ApiError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.CONFLICT.value(),
+            error = "Conflict",
+            message = ex.message ?: "User already exists",
+            details = emptyMap()
+        )
+        return ResponseEntity(apiError, HttpStatus.CONFLICT)
+    }
+
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFoundException(ex: UserNotFoundException, request: WebRequest): ResponseEntity<ApiError> {
+        log.error("User not found: {}", ex.message)
+
+        val apiError = ApiError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.NOT_FOUND.value(),
+            error = "Not Found",
+            message = ex.message ?: "User not found",
+            details = emptyMap()
+        )
+        return ResponseEntity(apiError, HttpStatus.NOT_FOUND)
+    }
+
+    @ExceptionHandler(InvalidCredentialsException::class)
+    fun handleInvalidCredentialsException(ex: InvalidCredentialsException, request: WebRequest): ResponseEntity<ApiError> {
+        log.error("Invalid credentials: {}", ex.message)
+
+        val apiError = ApiError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.UNAUTHORIZED.value(),
+            error = "Unauthorized",
+            message = ex.message ?: "Invalid credentials",
+            details = emptyMap()
+        )
+        return ResponseEntity(apiError, HttpStatus.UNAUTHORIZED)
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException::class)
+    fun handleHttpMessageNotReadable(ex: HttpMessageNotReadableException, request: WebRequest): ResponseEntity<ApiError> {
+        log.error("Malformed JSON request: {}", ex.message)
+
+        val apiError = ApiError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Bad Request",
+            message = "Malformed JSON request",
+            details = emptyMap()
+        )
+        return ResponseEntity(apiError, HttpStatus.BAD_REQUEST)
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException::class)
+    fun handleMethodArgumentTypeMismatch(ex: MethodArgumentTypeMismatchException, request: WebRequest): ResponseEntity<ApiError> {
+        val errorMessage = "The parameter '${ex.name}' of value '${ex.value}' could not be converted to type '${ex.requiredType?.simpleName}'"
+        log.error("Type mismatch: {}", errorMessage)
+
+        val apiError = ApiError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.BAD_REQUEST.value(),
+            error = "Bad Request",
+            message = errorMessage,
+            details = emptyMap()
+        )
+        return ResponseEntity(apiError, HttpStatus.BAD_REQUEST)
+    }
+
     @ExceptionHandler(AccessDeniedException::class)
     fun handleAccessDeniedException(ex: AccessDeniedException, request: WebRequest): ResponseEntity<ApiError> {
         log.error("Access denied: {}", ex.message)
@@ -89,6 +162,20 @@ class GlobalExceptionHandler {
             details = emptyMap()
         )
         return ResponseEntity(apiError, HttpStatus.FORBIDDEN)
+    }
+
+    @ExceptionHandler(ResourceNotFoundException::class)
+    fun handleResourceNotFoundException(ex: ResourceNotFoundException, request: WebRequest): ResponseEntity<ApiError> {
+        log.error("Resource not found: {}", ex.message)
+
+        val apiError = ApiError(
+            timestamp = LocalDateTime.now(),
+            status = HttpStatus.NOT_FOUND.value(),
+            error = "Not Found",
+            message = ex.message ?: "Resource not found",
+            details = emptyMap()
+        )
+        return ResponseEntity(apiError, HttpStatus.NOT_FOUND)
     }
 
     @ExceptionHandler(Exception::class)

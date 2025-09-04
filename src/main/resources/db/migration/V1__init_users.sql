@@ -18,3 +18,27 @@ CREATE TABLE users
 
 ALTER TABLE user_roles
     ADD CONSTRAINT fk_user_roles_on_user FOREIGN KEY (user_id) REFERENCES users (id);
+
+-- Insert default admin user
+INSERT INTO users (id, username, password, email)
+VALUES (nextval('users_seq'), 'admin',
+        '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', -- password: 'password'
+        'admin@example.com');
+
+-- Insert roles for admin user
+INSERT INTO user_roles (user_id, role) VALUES
+((SELECT id FROM users WHERE username = 'admin'), 'ROLE_ADMIN'),
+((SELECT id FROM users WHERE username = 'admin'), 'ROLE_USER');
+
+-- Create default roles data (can be used for reference when assigning roles to users)
+CREATE TABLE IF NOT EXISTS roles (
+    name VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
+    CONSTRAINT pk_roles PRIMARY KEY (name)
+);
+
+-- Insert available roles
+INSERT INTO roles (name, description) VALUES
+('ROLE_USER', 'Standard user with basic privileges'),
+('ROLE_ADMIN', 'Administrator with full access to all features'),
+('ROLE_YERA', 'Custom role for specific system operations');
