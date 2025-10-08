@@ -8,12 +8,11 @@ CREATE TABLE user_roles
 
 CREATE TABLE users
 (
-    id       INTEGER      NOT NULL,
+    id SERIAL PRIMARY KEY,
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255),
     email    VARCHAR(255),
-    creator  VARCHAR(255),
-    CONSTRAINT pk_users PRIMARY KEY (id)
+    creator  VARCHAR(255)
 );
 
 ALTER TABLE user_roles
