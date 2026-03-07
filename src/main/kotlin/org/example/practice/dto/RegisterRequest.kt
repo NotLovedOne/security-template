@@ -13,7 +13,7 @@ data class RegisterRequest(
     @field:Pattern(regexp = "^[a-zA-Z0-9_-]*$", message = "Username can only contain letters, numbers, underscores and hyphens")
     val username: String,
 
-    @field:NotBlank(message = "Email is required")
+//    @field:NotBlank(message = "Email is required")
     @field:Email(message = "Email should be valid")
     val email: String,
 

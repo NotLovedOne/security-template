@@ -1,7 +1,10 @@
 package org.example.practice.services
 
+import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
+import org.example.practice.dto.AuthResponse
 import org.example.practice.dto.LoginRequest
 import org.example.practice.dto.LoginResponse
 import org.example.practice.dto.RegisterRequest
@@ -35,11 +38,14 @@ class AuthService(
             )
         )
 
-        val token = jwtUtil.generateToken(CustomUserDetails(user))
-        return LoginResponse(token, UserResponse(id = user.id, username =user.username))
+//        val token = jwtUtil.generateToken(CustomUserDetails(user))
+
+
+
+        return LoginResponse(UserResponse(id = user.id, username =user.username))
     }
 
-    fun login(request: LoginRequest): LoginResponse {
+    fun login(request: LoginRequest, response: HttpServletResponse): LoginResponse {
         if(userRepository.findByUsername(request.username) == null) {
             throw IllegalArgumentException("Username ${request.username} does not exist")
         }
@@ -49,7 +55,16 @@ class AuthService(
             throw IllegalArgumentException("Password ${user.password} does not match required password")
         }
         val token = jwtUtil.generateToken(CustomUserDetails(user))
-        return LoginResponse(token, UserResponse(id = user.id, username =user.username))
+
+        val cookie = Cookie("token", token).apply {
+            isHttpOnly = true
+            secure = true
+            path = "/"
+            maxAge = 24 * 60 * 60 // 7 days
+        }
+
+        response.addCookie(cookie)
+        return LoginResponse(UserResponse(id = user.id, username =user.username))
 
     }
 
