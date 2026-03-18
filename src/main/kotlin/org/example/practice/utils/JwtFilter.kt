@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletResponse
 import org.example.practice.services.CustomUserDetailsService
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -22,13 +21,15 @@ class JwtFilter(
         filterChain: FilterChain
     ) {
         val authHeader = request.getHeader("Authorization")
+        val token = when {
+            authHeader != null && authHeader.startsWith("Bearer ") -> authHeader.substring(7)
+            else -> request.cookies?.find { it.name == "token" }?.value
+        }
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (token == null) {
             filterChain.doFilter(request, response)
             return
         }
-
-        val token = authHeader.substring(7)
         val username = jwtUtil.extractUsername(token)
 
         if(username != null && SecurityContextHolder.getContext().authentication == null) {

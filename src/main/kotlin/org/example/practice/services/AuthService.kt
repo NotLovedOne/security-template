@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.transaction.Transactional
+import org.example.practice.config.JwtConfig
 import org.example.practice.dto.AuthResponse
 import org.example.practice.dto.LoginRequest
 import org.example.practice.dto.LoginResponse
@@ -21,7 +22,7 @@ class AuthService(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
     private val jwtUtil: JwtUtil,
-    util: JwtUtil
+    private val jwtConfig: JwtConfig
 ) {
     @Transactional
     fun register(request: RegisterRequest): LoginResponse{
@@ -46,13 +47,11 @@ class AuthService(
     }
 
     fun login(request: LoginRequest, response: HttpServletResponse): LoginResponse {
-        if(userRepository.findByUsername(request.username) == null) {
-            throw IllegalArgumentException("Username ${request.username} does not exist")
-        }
-        val user = userRepository.findByUsername(request.username)!!
+        val user = userRepository.findByUsername(request.username)
+            ?: throw IllegalArgumentException("Invalid credentials")
 
-        if(!passwordEncoder.matches(request.password, user.password)) {
-            throw IllegalArgumentException("Password ${user.password} does not match required password")
+        if (!passwordEncoder.matches(request.password, user.password)) {
+            throw IllegalArgumentException("Invalid credentials")
         }
         val token = jwtUtil.generateToken(CustomUserDetails(user))
 
@@ -60,7 +59,7 @@ class AuthService(
             isHttpOnly = true
             secure = true
             path = "/"
-            maxAge = 24 * 60 * 60 // 7 days
+            maxAge = jwtConfig.expiration.toInt()
         }
 
         response.addCookie(cookie)
