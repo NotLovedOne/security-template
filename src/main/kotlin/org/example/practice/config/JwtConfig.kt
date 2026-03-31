@@ -10,4 +10,7 @@ class JwtConfig {
 
     @Value("\${jwt.duration}")
     var expiration: Long = 3600
+
+    @Value("\${jwt.refresh-duration}")
+    var refreshDuration: Long = 2592000
 }

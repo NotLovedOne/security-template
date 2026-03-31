@@ -26,17 +26,15 @@ class CustomUserDetails (private val user : User) : UserDetails {
         return true
     }
     override fun isAccountNonLocked(): Boolean {
-        return true
+        return user.accountNonLocked
     }
     override fun isCredentialsNonExpired(): Boolean {
         return true
     }
     override fun isEnabled(): Boolean {
-        return true
+        return user.enabled
     }
 
-    fun dtoToUser(): CustomUserDetails {
-        return CustomUserDetails(user)
-    }
+    fun getUser(): User = user
 
 }

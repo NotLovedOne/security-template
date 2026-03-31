@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 class CustomUserDetailsService(private val repository: UserRepository) : UserDetailsService {
     override fun loadUserByUsername(username: String?): UserDetails {
         val user = repository.findByUsername(username!!)
-            ?: throw Exception("User with username $username not found")
+            ?: throw org.springframework.security.core.userdetails.UsernameNotFoundException("User with username $username not found")
         return CustomUserDetails(user)
     }
 }

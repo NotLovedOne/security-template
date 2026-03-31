@@ -16,6 +16,10 @@ class User(
 
     var email: String? = null,
     var creator: String? = null,
+    @Column(nullable = false)
+    var enabled: Boolean = true,
+    @Column(nullable = false)
+    var accountNonLocked: Boolean = true,
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = [JoinColumn(name = "user_id")])
@@ -24,4 +28,4 @@ class User(
     var roles: MutableSet<Role> = mutableSetOf(Role.ROLE_USER)
 )
 
-enum class Role { ROLE_USER, ROLE_ADMIN, ROLE_YERA }
+enum class Role { ROLE_USER, ROLE_ADMIN }

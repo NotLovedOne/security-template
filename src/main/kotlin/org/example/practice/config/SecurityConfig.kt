@@ -1,7 +1,7 @@
 package org.example.practice.config
 
 import org.example.practice.utils.JwtFilter
-import org.example.practice.utils.JwtUtil
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
@@ -21,7 +21,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-class SecurityConfig (private val jwtFilter: JwtFilter) {
+class SecurityConfig(
+    private val jwtFilter: JwtFilter,
+    @Value("\${cors.allowed-origins}") private val corsAllowedOrigins: String
+) {
 
     @Bean
     fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
@@ -53,9 +56,9 @@ class SecurityConfig (private val jwtFilter: JwtFilter) {
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource {
         val configuration = CorsConfiguration()
-        configuration.allowedOrigins = listOf("http://localhost:5173")
+        configuration.allowedOrigins = corsAllowedOrigins.split(",").map { it.trim() }
         configuration.allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
-        configuration.allowedHeaders = listOf("*")
+        configuration.allowedHeaders = listOf("Content-Type", "Authorization", "X-Requested-With")
         configuration.allowCredentials = true
         val source = UrlBasedCorsConfigurationSource()
         source.registerCorsConfiguration("/**", configuration)
