@@ -16,7 +16,7 @@ class KafkaConfig {
     private lateinit var bootstrapServers: String
 
     @Bean
-    fun ProducerFactory(): ProducerFactory<String, String> {
+    fun producerFactory(): ProducerFactory<String, String> {
         val props = mapOf(
             ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to bootstrapServers,
             ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringSerializer",
@@ -30,8 +30,8 @@ class KafkaConfig {
 
 
     @Bean
-    fun kafkaTemplate(): KafkaTemplate<String, String> {
-        return KafkaTemplate(ProducerFactory())
+    fun kafkaTemplate(producerFactory: ProducerFactory<String, String>): KafkaTemplate<String, String> {
+        return KafkaTemplate(producerFactory)
     }
 
     @Bean
