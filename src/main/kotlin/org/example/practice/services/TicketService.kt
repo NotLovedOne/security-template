@@ -52,13 +52,14 @@ class TicketService(
             TransactionSynchronizationManager.registerSynchronization(
                 object : TransactionSynchronization {
                     override fun afterCommit() {
-                        kafkaTemplate.send("ticket-created", saved.id?.toString() ?: "")
-                        redisService.set("ticket:${saved.id}", saved.id?.toString() ?: "")
+                        val id = saved.id?.toString() ?: return
+                        runCatching { kafkaTemplate.send("ticket-created", id) }
+                            .onFailure { logger.warn("Kafka send failed for ticket {}: {}", id, it.message) }
+                        runCatching { redisService.set("ticket:$id", id) }
+                            .onFailure { logger.warn("Redis set failed for ticket {}: {}", id, it.message) }
                     }
                 }
             )
-//            kafkaTemplate.send("ticket-created", saved.id.toString())
-//            redisService.set("ticket:${saved.id}", saved.id.toString())
             val response = dto.copy(
                 reporter = reporterUsername,
                 status = saved.status.name,

@@ -21,7 +21,8 @@ class KafkaConfig {
             ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringSerializer",
             ProducerConfig.ACKS_CONFIG to "all",
             ProducerConfig.RETRIES_CONFIG to 10,
-            ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true
+            ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG to true,
+            ProducerConfig.MAX_BLOCK_MS_CONFIG to 3000
         )
         return DefaultKafkaProducerFactory(props)
     }
