@@ -52,8 +52,8 @@ class TicketService(
             TransactionSynchronizationManager.registerSynchronization(
                 object : TransactionSynchronization {
                     override fun afterCommit() {
-                        kafkaTemplate.send("ticket-created", saved.id.toString())
-                        redisService.set("ticket:${saved.id}", saved.id.toString())
+                        kafkaTemplate.send("ticket-created", saved.id?.toString() ?: "")
+                        redisService.set("ticket:${saved.id}", saved.id?.toString() ?: "")
                     }
                 }
             )
