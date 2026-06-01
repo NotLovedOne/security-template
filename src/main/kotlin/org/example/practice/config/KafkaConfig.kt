@@ -1,11 +1,9 @@
 package org.example.practice.config
 
-import org.apache.kafka.clients.admin.NewTopic
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.kafka.config.TopicBuilder
 import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.kafka.core.ProducerFactory
@@ -28,21 +26,8 @@ class KafkaConfig {
         return DefaultKafkaProducerFactory(props)
     }
 
-
     @Bean
     fun kafkaTemplate(producerFactory: ProducerFactory<String, String>): KafkaTemplate<String, String> {
         return KafkaTemplate(producerFactory)
     }
-
-    @Bean
-    fun taskEventTopic(): NewTopic = TopicBuilder.name("task-event-topic")
-            .partitions(1)
-            .replicas(1)
-            .build()
-
-    @Bean
-    fun taskEventDlt(): NewTopic = TopicBuilder.name("task-event-dlt")
-            .partitions(1)
-            .replicas(1)
-            .build()
 }

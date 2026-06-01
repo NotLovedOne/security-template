@@ -1,5 +1,6 @@
 package org.example.practice.controllers
 
+import org.example.practice.dto.TicketDto
 import org.example.practice.model.Ticket
 import org.example.practice.services.TicketService
 import org.springframework.http.ResponseEntity
@@ -14,7 +15,7 @@ class TicketController (
     private val ticketService: TicketService
 ){
     @PostMapping("/create")
-    fun createTicket(@RequestBody ticket: Ticket) : ResponseEntity<Ticket> {
+    fun createTicket(@RequestBody ticket: TicketDto) : ResponseEntity<TicketDto> {
         return ticketService.createTicket(ticket)
     }
 
